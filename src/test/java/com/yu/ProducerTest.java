@@ -40,7 +40,7 @@ public class ProducerTest {
      */
     @Test
     public void testTopic() {
-        rabbitTemplate.convertAndSend("spring_topic_exchange", "wen.haha.ha", "spring topic ...");
+        rabbitTemplate.convertAndSend("spring_topic_exchange", "wena.www.ww", "spring topic ...");
     }
 
     //消息可靠性投递

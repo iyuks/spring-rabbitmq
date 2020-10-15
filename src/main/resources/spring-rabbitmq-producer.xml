@@ -58,7 +58,7 @@
     <rabbit:topic-exchange id="spring_topic_exchange" name="spring_topic_exchange" auto-declare="true">
         <rabbit:bindings>
             <rabbit:binding pattern="wen.*" queue="spring_topic_queue_star"/>
-            <rabbit:binding pattern="wen.*" queue="spring_topic_queue_well"/>
+            <rabbit:binding pattern="#.#" queue="spring_topic_queue_well"/>
             <rabbit:binding pattern="yan.#" queue="spring_topic_queue_well2"/>
         </rabbit:bindings>
     </rabbit:topic-exchange>
