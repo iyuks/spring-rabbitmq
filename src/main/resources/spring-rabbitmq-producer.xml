@@ -17,14 +17,20 @@
                                port="${rabbitmq.port}"
                                username="${rabbitmq.username}"
                                password="${rabbitmq.password}"
-                               virtual-host="${rabbitmq.virtual-host}"/>
+                               virtual-host="${rabbitmq.virtual-host}"
+                               publisher-confirms="true"
+                               publisher-returns="true"
+    />
+
     <!--定义管理交换机、队列-->
     <rabbit:admin connection-factory="connectionFactory"/>
 
+    <!--定义rabbitTemplate对象操作可以在代码中方便发送消息-->
+    <rabbit:template id="rabbitTemplate" connection-factory="connectionFactory"/>
+
     <!--定义持久化队列，不存在则自动创建；不绑定到交换机则绑定到默认交换机
-    默认交换机类型为direct，名字为：""，路由键为队列的名称
-    -->
-    <rabbit:queue id="spring_queue" name="spring_queue" auto-declare="true"/>
+    默认交换机类型为direct，名字为：""，路由键为队列的名称-->
+    <rabbit:queue id="spring_queue" name="spring_queue" auto-declare="true" durable="true" auto-delete="false"/>
 
     <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~广播；所有队列都能收到消息~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
     <!--定义广播交换机中的持久化队列，不存在则自动创建-->
@@ -52,11 +58,85 @@
     <rabbit:topic-exchange id="spring_topic_exchange" name="spring_topic_exchange" auto-declare="true">
         <rabbit:bindings>
             <rabbit:binding pattern="wen.*" queue="spring_topic_queue_star"/>
-            <rabbit:binding pattern="wen.#" queue="spring_topic_queue_well"/>
+            <rabbit:binding pattern="wen.*" queue="spring_topic_queue_well"/>
             <rabbit:binding pattern="yan.#" queue="spring_topic_queue_well2"/>
         </rabbit:bindings>
     </rabbit:topic-exchange>
 
-    <!--定义rabbitTemplate对象操作可以在代码中方便发送消息-->
-    <rabbit:template id="rabbitTemplate" connection-factory="connectionFactory"/>
+
+    <!--消息可靠性投递(生产端)-->
+    <rabbit:queue id="test_queue_confirm" name="test_queue_confirm"></rabbit:queue>
+    <rabbit:direct-exchange name="test_exchange_confirm">
+        <rabbit:bindings>
+            <rabbit:binding queue="test_queue_confirm" key="confirm"></rabbit:binding>
+        </rabbit:bindings>
+    </rabbit:direct-exchange>
+
+
+    <!--ttl-->
+    <rabbit:queue name  ="test_queue_ttl" id="test_queue_ttl">
+        <!--设置queue参数-->
+        <rabbit:queue-arguments>
+            <!--x-message-ttl指队列过期时间,单位毫秒-->
+            <entry key="x-message-ttl" value="10000" value-type="java.lang.Integer"></entry>
+        </rabbit:queue-arguments>
+    </rabbit:queue>
+    <rabbit:topic-exchange name="test_exchange_ttl">
+        <rabbit:bindings>
+            <rabbit:binding pattern="ttl.#" queue="test_queue_ttl"></rabbit:binding>
+        </rabbit:bindings>
+    </rabbit:topic-exchange>
+
+
+    <!--死信队列-->
+    <!--正常队列和正常交换机-->
+    <rabbit:queue name="test_queue_dlx" id="test_queue_dlx">
+        <!--正常队列绑定私信交换机-->
+        <rabbit:queue-arguments>
+            <!--死信交换机名称-->
+            <entry key="x-dead-letter-exchange" value="exchange_dlx"/>
+            <!--发送给死信交换机???的routing key-->
+            <entry key="x-dead-letter-routing-key" value="dlx.hehe"/>
+            <!--设置队列的过期时间,毫秒-->
+            <entry key="x-message-ttl" value="10000" value-type="java.lang.Integer"/>
+            <!--设置队列的长度限制-->
+            <entry key="x-max-length" value="10" value-type="java.lang.Integer"/>
+        </rabbit:queue-arguments>
+    </rabbit:queue>
+    <rabbit:topic-exchange name="test_exchange_dlx">
+        <rabbit:bindings>
+            <rabbit:binding pattern="test.dlx.#" queue="test_queue_dlx"></rabbit:binding>
+        </rabbit:bindings>
+    </rabbit:topic-exchange>
+    <!--死信队列和死信交换机-->
+    <rabbit:queue name="queue_dlx" id="queue_dlx"></rabbit:queue>
+    <rabbit:topic-exchange name="exchange_dlx">
+        <rabbit:bindings>
+            <rabbit:binding pattern="dlx.#" queue="queue_dlx"></rabbit:binding>
+        </rabbit:bindings>
+    </rabbit:topic-exchange>
+
+
+    <!--延迟队列-->
+    <!--正常交换机和队列-->
+    <rabbit:queue id="order_queue" name="order_queue">
+        <!--设置正常队列过期时间10秒-->
+        <rabbit:queue-arguments>
+            <entry key="x-dead-letter-exchange" value="order_exchange_dlx"/>
+            <entry key="x-dead-letter-routing-key" value="dlx.order.cancel"/>
+            <entry key="x-message-ttl" value="10000" value-type="java.lang.Integer"/>
+        </rabbit:queue-arguments>
+    </rabbit:queue>
+    <rabbit:topic-exchange name="order_exchange">
+        <rabbit:bindings>
+            <rabbit:binding pattern="order.#" queue="order_queue"></rabbit:binding>
+        </rabbit:bindings>
+    </rabbit:topic-exchange>
+    <!--死信交换机和死信队列-->
+    <rabbit:queue id="order_queue_dlx" name="order_queue_dlx"></rabbit:queue>
+    <rabbit:topic-exchange name="order_exchange_dlx">
+        <rabbit:bindings>
+            <rabbit:binding pattern="dlx.order.#" queue="order_queue_dlx"></rabbit:binding>
+        </rabbit:bindings>
+    </rabbit:topic-exchange>
 </beans>
