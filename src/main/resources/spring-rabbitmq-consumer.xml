@@ -18,6 +18,9 @@
                                username="${rabbitmq.username}"
                                password="${rabbitmq.password}"
                                virtual-host="${rabbitmq.virtual-host}"/>
+    <!--定义管理交换机,队列-->
+    <rabbit:admin connection-factory="connectionFactory"/>
+
 
     <bean id="springQueueListener" class="com.yu.rabbitmq.listener.SpringQueueListener"/>
     <bean id="fanoutListener1" class="com.yu.rabbitmq.listener.SpringFanoutQueue"/>
@@ -33,5 +36,24 @@
         <!--<rabbit:listener ref="topicListenerStar" queue-names="spring_topic_queue_star"/>-->
         <rabbit:listener ref="topicListenerWell" queue-names="spring_topic_queue_well"/>
         <!--<rabbit:listener ref="topicListenerWell2" queue-names="spring_topic_queue_well2"/>-->
+    </rabbit:listener-container>
+
+    <!--消息可靠性投递(消费端)-->
+    <!--<context:component-scan base-package="cn.yu.listener"/>-->
+    <bean id="ackListener" class="cn.yu.listener.AckListener"/>
+    <rabbit:listener-container connection-factory="connectionFactory" acknowledge="manual" prefetch="1">
+        <rabbit:listener ref="ackListener" queue-names="test_queue_confirm"></rabbit:listener>
+    </rabbit:listener-container>
+
+    <!--死信队列-->
+    <bean id="dlxAckListener" class="cn.yu.listener.DlxAckListener"/>
+    <rabbit:listener-container connection-factory="connectionFactory" acknowledge="manual" prefetch="1">
+        <rabbit:listener ref="dlxAckListener" queue-names="test_queue_dlx"></rabbit:listener>
+    </rabbit:listener-container>
+
+    <!--延迟队列-->
+    <bean id="delayListener" class="cn.yu.listener.DelayListener"/>
+    <rabbit:listener-container connection-factory="connectionFactory" acknowledge="manual" prefetch="1">
+        <rabbit:listener ref="delayListener" queue-names="order_queue_dlx"></rabbit:listener>
     </rabbit:listener-container>
 </beans>

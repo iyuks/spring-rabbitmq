@@ -9,7 +9,8 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 @ContextConfiguration(value = "classpath:spring-rabbitmq-consumer.xml")
 public class ConsumerTest {
     @Test
-    public void test1(){
-
+    public void test1() {
+        while (true) {
+        }
     }
 }
