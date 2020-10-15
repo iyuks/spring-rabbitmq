@@ -24,10 +24,10 @@
 
     <bean id="springQueueListener" class="com.yu.rabbitmq.listener.SpringQueueListener"/>
     <bean id="fanoutListener1" class="com.yu.rabbitmq.listener.SpringFanoutQueue"/>
-    <!--<bean id="fanoutListener2" class="com.itheima.rabbitmq.listener.FanoutListener2"/>-->
-    <!--<bean id="topicListenerStar" class="com.itheima.rabbitmq.listener.TopicListenerStar"/>-->
+    <!--<bean id="fanoutListener2" class="com.yu.rabbitmq.listener.FanoutListener2"/>-->
+    <!--<bean id="topicListenerStar" class="com.yu.rabbitmq.listener.TopicListenerStar"/>-->
     <bean id="topicListenerWell" class="com.yu.rabbitmq.listener.TopicListenerWell"/>
-    <!--<bean id="topicListenerWell2" class="com.itheima.rabbitmq.listener.TopicListenerWell2"/>-->
+    <!--<bean id="topicListenerWell2" class="com.yu.rabbitmq.listener.TopicListenerWell2"/>-->
 
     <rabbit:listener-container connection-factory="connectionFactory" auto-declare="true">
         <rabbit:listener ref="springQueueListener" queue-names="spring_queue"/>
